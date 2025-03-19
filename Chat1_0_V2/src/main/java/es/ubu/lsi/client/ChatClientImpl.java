@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -19,8 +20,12 @@ import es.ubu.lsi.server.ChatServerImpl;
  * @author Víctor De Marco Velasco
  *
  */
-public class ChatClientImpl implements ChatClient {
+public class ChatClientImpl implements ChatClient,Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public String server;
 	public String username;
 	public int port;
@@ -62,9 +67,9 @@ public class ChatClientImpl implements ChatClient {
 				return false;
 			}
 			msg = new ChatMessage(this.username, ChatMessage.MessageType.MESSAGE, msn);
-			oos.flush();
+			System.out.println("El mensaje que vas a enviar es:"+msg);
+			System.out.println("El String que vas a enviar es:"+msn);
 			oos.writeObject(msg);
-			oos.flush();
 
 		} catch (IOException e) {
 			return false;

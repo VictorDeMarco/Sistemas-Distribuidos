@@ -108,26 +108,30 @@ public class ChatServerImpl implements ChatServer {
 		public synchronized void run() {
 			while (alive) {
 				try {
-					ChatMessage msn = (ChatMessage) ois.readObject();
+					
+					Object prueba = ois.readObject();
+					System.out.println("El objeto es: "+ prueba);
+					ChatMessage msn = (ChatMessage) prueba;
+					
 					username = msn.getUsername();
 					System.out.println("\n"+username + " Mensaje:" + msn.getMessage());
 					if(mapa.get(id)==null) {
 					  mapa.put(id, username);
 					}
 					System.out.println("El usuario es: "+mapa.get(id));
-					broadcast(msn);
+					//broadcast(msn);
 
 				} catch (IOException ex) {
 					ex.printStackTrace();
 				} catch (ClassNotFoundException ex) {
 					ex.printStackTrace();
 				}
-				try {
-					Thread.sleep(15000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//				try {
+//					//Thread.sleep(15000);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 			}
 		}
 
