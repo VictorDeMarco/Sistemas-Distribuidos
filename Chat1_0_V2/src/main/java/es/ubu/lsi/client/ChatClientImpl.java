@@ -71,6 +71,9 @@ public class ChatClientImpl implements ChatClient, Serializable {
     @Override
     public void disconnect() {
         try {
+        	ChatMessage msg = new ChatMessage(this.username, ChatMessage.MessageType.LOGOUT, "exit");
+        	oos.writeObject(msg);
+            oos.flush();
             carryOn = false;
             if (oos != null) oos.close();
             if (socket != null) socket.close();

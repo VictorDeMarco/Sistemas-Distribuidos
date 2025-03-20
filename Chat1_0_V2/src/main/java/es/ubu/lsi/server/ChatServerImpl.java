@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import es.ubu.lsi.common.ChatMessage;
+import es.ubu.lsi.common.ChatMessage.MessageType;
 
 /**
  * @author Víctor De Marco Velasco
@@ -138,6 +139,7 @@ public class ChatServerImpl implements ChatServer {
 	    private Socket socket;
 	    private ObjectInputStream ois;
 	    private ObjectOutputStream oos;
+	    public List<String> banlist = new ArrayList<>();
 
 	    public ServerThreadForClient(Socket socket, int id) {
 	        super();
@@ -163,10 +165,27 @@ public class ChatServerImpl implements ChatServer {
 	                if (prueba instanceof ChatMessage) {
 	                    ChatMessage msn = (ChatMessage) prueba;
 	                    username = msn.getUsername();
-	                    System.out.println("\n" + username + " Mensaje: " + msn.getMessage());
-
-	                    // Enviar el mensaje a todos los clientes conectados
-	                    broadcast(msn,this);
+	                    if (msn.getType()== MessageType.LOGOUT) {
+	                    	disconnect();
+	                    }else if(msn.getMessage().startsWith("ban ")) {
+	                    	banlist.add(msn.getMessage().split(" ")[1]);
+	                    	System.out.println(this.username+" ha baneado a " + msn.getMessage().split(" ")[1]);
+	                    	
+	                    }else if(msn.getMessage().startsWith("unban ")) {
+	                    	if (banlist.contains(msn.getMessage().split(" ")[1])) {
+	                    		banlist.remove(msn.getMessage().split(" ")[1]);
+		                    	System.out.println(this.username+" ha desbaneado a " + msn.getMessage().split(" ")[1]);
+	                    	}else {
+	                    		ChatMessage error =  new ChatMessage(this.username, ChatMessage.MessageType.MESSAGE, "En tu lista de usuarios baneados no se ha encontrado "+msn.getMessage().split(" ")[1]);
+	                    		sendMessage(error);
+	                    		//System.out.println("\nPor lo tanto no se ha podido llevar a cabo la opercion de desbaneo\n");
+	                    	}
+	                    	
+	                    }else {
+	                    	System.out.println("\n" + username + " Mensaje: " + msn.getMessage());
+		                    // Enviar el mensaje a todos los clientes conectados
+		                    broadcast(msn,this);
+	                    }
 	                } else {
 	                    System.err.println("ERROR: Se recibió un objeto de tipo inesperado: " + prueba.getClass().getName());
 	                }
@@ -176,14 +195,6 @@ public class ChatServerImpl implements ChatServer {
 	            }
 	        }
 
-	        // Cerrar conexión cuando el cliente se desconecta
-	        try {
-	            ois.close();
-	            oos.close();
-	            socket.close();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
 	    }
 
 	    public void sendMessage(ChatMessage msg) {
@@ -200,7 +211,7 @@ public class ChatServerImpl implements ChatServer {
                 if (oos != null) oos.close();
                 if (socket != null) socket.close();
                 clients.remove(this);
-                System.out.println("Cliente con ID " + id + " desconectado y eliminado.");
+                System.out.println("\nCliente con ID " + id + " desconectado y eliminado. \n");
             } catch (IOException e) {
                 e.printStackTrace();
             }
