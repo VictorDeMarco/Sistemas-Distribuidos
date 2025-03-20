@@ -3,16 +3,14 @@
  */
 package es.ubu.lsi.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-
+import java.util.ArrayList;
+import java.util.List;
 import es.ubu.lsi.common.ChatMessage;
 
 /**
@@ -25,12 +23,9 @@ public class ChatServerImpl implements ChatServer {
 	public static SimpleDateFormat sdf;
 	public int port;
 	public boolean alive = true;
-
-	public ObjectInputStream ois;
-	public ObjectOutputStream oos;
-	public Socket socket;
 	
-	public HashMap<Integer, String> mapa = new HashMap<Integer, String>();
+	public Socket socket;
+	private List<ServerThreadForClient> clients = new ArrayList<>();
 	
 	public ChatServerImpl(int port) {
 		this.port = port;
@@ -46,6 +41,7 @@ public class ChatServerImpl implements ChatServer {
 				Socket cliente = serverSocket.accept();
 				System.out.println("Conexión aceptada: " + cliente.getRemoteSocketAddress());
 				ServerThreadForClient stfc = new ServerThreadForClient(cliente,cliente.getPort());
+				clients.add(stfc);
 				Thread th = new Thread(stfc);
 				th.start();
 				
@@ -64,17 +60,14 @@ public class ChatServerImpl implements ChatServer {
 	}
 
 	@Override
-	public void broadcast(ChatMessage message) {
-
-		try {
-			oos.writeObject(message);
-			oos.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public synchronized void broadcast(ChatMessage message,ServerThreadForClient cliente) {
+		for (ServerThreadForClient client : clients) {
+            if (client != cliente) { // Evitar enviar al remitente original
+                client.sendMessage(message);
+            }
+          }
 		}
-
-	}
+		
 
 	@Override
 	public void remove(int id) {
@@ -89,66 +82,66 @@ public class ChatServerImpl implements ChatServer {
 	}
 
 	public class ServerThreadForClient extends Thread {
-		public int id;
-		public String username;
+	    public int id;
+	    public String username;
+	    private Socket socket;
+	    private ObjectInputStream ois;
+	    private ObjectOutputStream oos;
 
-		public ServerThreadForClient(Socket socket,int id) {
-			super();
-			try {
-				oos = new ObjectOutputStream(socket.getOutputStream());
-				oos.flush();
-				ois = new ObjectInputStream(socket.getInputStream());
-				this.id = id;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+	    public ServerThreadForClient(Socket socket, int id) {
+	        super();
+	        this.socket = socket;
+	        this.id = id;
+	        try {
+	            // Asegurar el orden correcto de creación de streams
+	            oos = new ObjectOutputStream(socket.getOutputStream());
+	            oos.flush();
+	            ois = new ObjectInputStream(socket.getInputStream());
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
 
-		public synchronized void run() {
-			while (alive) {
-				try {
-					
-					Object prueba = ois.readObject();
-					System.out.println("El objeto es: "+ prueba);
-					ChatMessage msn = (ChatMessage) prueba;
-					
-					username = msn.getUsername();
-					System.out.println("\n"+username + " Mensaje:" + msn.getMessage());
-					if(mapa.get(id)==null) {
-					  mapa.put(id, username);
-					}
-					System.out.println("El usuario es: "+mapa.get(id));
-					//broadcast(msn);
+	    public synchronized void run() {
+	        while (true) {
+	            try {
+	                Object prueba = ois.readObject();
+	                //System.out.println("El objeto es: " + prueba.getClass().getName());
 
-				} catch (IOException ex) {
-					ex.printStackTrace();
-				} catch (ClassNotFoundException ex) {
-					ex.printStackTrace();
-				}
-//				try {
-//					//Thread.sleep(15000);
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-			}
-		}
+	                if (prueba instanceof ChatMessage) {
+	                    ChatMessage msn = (ChatMessage) prueba;
+	                    username = msn.getUsername();
+	                    System.out.println("\n" + username + " Mensaje: " + msn.getMessage());
 
-		public void sendMessage(ChatMessage msg) {
-			System.out.print(">> Ingrese un nombre de usuario: ");
-			try {
-				msg = new ChatMessage(username, ChatMessage.MessageType.MESSAGE, "Hola, deseo conectarme!");
-				oos.flush();
-				oos.writeObject(msg);
-				oos.flush();
+	                    // Enviar el mensaje a todos los clientes conectados
+	                    broadcast(msn,this);
+	                } else {
+	                    System.err.println("ERROR: Se recibió un objeto de tipo inesperado: " + prueba.getClass().getName());
+	                }
+	            } catch (IOException | ClassNotFoundException ex) {
+	                System.err.println("Error en la comunicación con el cliente " + id);
+	                break; // Salir del bucle si hay error
+	            }
+	        }
 
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// Información de usuarios conectados
-			System.out.println("_____________________\n\n" + "Usuarios conectados\n---------------------\n");
-		}
+	        // Cerrar conexión cuando el cliente se desconecta
+	        try {
+	            ois.close();
+	            oos.close();
+	            socket.close();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+
+	    public void sendMessage(ChatMessage msg) {
+	        try {
+	            oos.writeObject(msg);
+	            oos.flush();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
 	}
 }
+

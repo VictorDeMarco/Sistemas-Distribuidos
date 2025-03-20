@@ -18,7 +18,7 @@ import java.io.*;
 public class ChatMessage implements Serializable {
 
 	/** Serial version UID. */
-	private static final long serialVersionUID = 7467237896682458959L;
+	private static final long serialVersionUID = 17L;
 
 	/**
 	 * Message type.
