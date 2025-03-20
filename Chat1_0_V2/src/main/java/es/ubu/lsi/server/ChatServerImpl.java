@@ -3,7 +3,9 @@
  */
 package es.ubu.lsi.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -34,10 +36,13 @@ public class ChatServerImpl implements ChatServer {
 	@Override
 	public void startup() {
 		// TODO Auto-generated method stub
+		
 		try {
+			
 			ServerSocket serverSocket = new ServerSocket(DEFAULT_PORT);
 			System.out.println("Escuchando...");
-			while (true) {
+			 new ServerConsoleListener().start();
+			while (alive) {
 				Socket cliente = serverSocket.accept();
 				System.out.println("Conexión aceptada: " + cliente.getRemoteSocketAddress());
 				ServerThreadForClient stfc = new ServerThreadForClient(cliente,cliente.getPort());
@@ -55,8 +60,15 @@ public class ChatServerImpl implements ChatServer {
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
-
+		 alive = false;
+	        try {
+	            for (ServerThreadForClient client : clients) {
+	                client.disconnect();
+	            }
+	            System.exit(0);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
 	}
 
 	@Override
@@ -68,18 +80,57 @@ public class ChatServerImpl implements ChatServer {
           }
 		}
 		
-
 	@Override
-	public void remove(int id) {
-		// TODO Auto-generated method stub
-
-	}
+	public synchronized void remove(int id) {
+		boolean loc = true;
+		for (ServerThreadForClient client : clients) {
+            if (client.id == id) { 
+            	 client.disconnect();
+				 clients.remove(client);
+				 loc =false;
+				 break;
+            }
+          }
+		if (loc==true) {
+			System.out.println("No se encontró un cliente con ID " + id);
+		}
+       
+    }
 
 	public static void main(String[] args) {
 		ChatServerImpl server = new ChatServerImpl(DEFAULT_PORT);
 		server.startup();
 
 	}
+	
+	private class ServerConsoleListener extends Thread {
+        @Override
+        public void run() {
+            try (BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in))) {
+                while (alive) {
+                    String command = consoleReader.readLine();
+                    if (command.startsWith("remove ")) {
+                        try {
+                            int id = Integer.parseInt(command.split(" ")[1]);
+                            remove(id);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Formato incorrecto. Usa: remove <id>");
+                        }
+                    } else if(command.startsWith("shutdown")) {
+                    	 System.out.println("Apagando el servidor");
+                    	 shutdown();
+                    }else {
+                    	 System.out.println("Comando desconocido. Usa: remove <id> o shutdown");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+	
+	
+	
 
 	public class ServerThreadForClient extends Thread {
 	    public int id;
@@ -102,7 +153,8 @@ public class ChatServerImpl implements ChatServer {
 	        }
 	    }
 
-	    public synchronized void run() {
+
+		public synchronized void run() {
 	        while (true) {
 	            try {
 	                Object prueba = ois.readObject();
@@ -119,7 +171,7 @@ public class ChatServerImpl implements ChatServer {
 	                    System.err.println("ERROR: Se recibió un objeto de tipo inesperado: " + prueba.getClass().getName());
 	                }
 	            } catch (IOException | ClassNotFoundException ex) {
-	                System.err.println("Error en la comunicación con el cliente " + id);
+	                System.err.println("Se ha desconectado el cliente con ID " + id);
 	                break; // Salir del bucle si hay error
 	            }
 	        }
@@ -142,6 +194,17 @@ public class ChatServerImpl implements ChatServer {
 	            e.printStackTrace();
 	        }
 	    }
+	    public void disconnect() {
+            try {
+                if (ois != null) ois.close();
+                if (oos != null) oos.close();
+                if (socket != null) socket.close();
+                clients.remove(this);
+                System.out.println("Cliente con ID " + id + " desconectado y eliminado.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 	}
 }
 
