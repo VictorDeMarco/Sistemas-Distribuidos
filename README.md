@@ -2,7 +2,7 @@
  Buenos Dias, 
  En este documento dejo anotadas ciertas instrucciones relevantes para la ejecucion del codigo:
 
- 1 El proyecto se encuentra con un Maven clean realizado asi que para su correcta ejecucion debra realizarse un Mave install antes de ejecutar las clases de java.
+ 1 El proyecto se encuentra con un Maven clean realizado asi que para su correcta ejecucion debera realizarse un Mave install antes de ejecutar las clases de java.
 
  2 Se nos dio la clase ChatMessage ya creada y funcional, aun asi decidi modificar ciertos aspectos de la misma para facilitar el funcionamiento de mi codigo,
  en si lo unico que se modifico de la clase original fue cambiar que en vez de pasar el ID del cliente como un parametro del mensaje se paso el username para facilitar el recoger esa informacion en el servidor 
@@ -13,6 +13,8 @@
  3 En caso de que te extrañe ver que en este repositorio se han realizado commits de aperentemente dos usuarios, tengo que decir que ambos soy yo Victor De Marco.
  Simplemente uno de ellos es el usuario que tengo configurado en el portatil y el otro es el usuario que tengo en el ordenador de sobremesa que utilizo mayoritariamente.
  Dicho usuario tiene el nombre de motachin.
- 
+
+ Gracias por leer,
+ Victor De Marco Velasco
 
  
