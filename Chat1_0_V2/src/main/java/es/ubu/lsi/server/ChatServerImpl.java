@@ -76,7 +76,7 @@ public class ChatServerImpl implements ChatServer {
 	public synchronized void broadcast(ChatMessage message,ServerThreadForClient cliente) {
 		for (ServerThreadForClient client : clients) {
             if (client != cliente) { // Evitar enviar al remitente original
-                client.sendMessage(message);
+                client.sendMessage(message,cliente);
             }
           }
 		}
@@ -177,7 +177,7 @@ public class ChatServerImpl implements ChatServer {
 		                    	System.out.println(this.username+" ha desbaneado a " + msn.getMessage().split(" ")[1]);
 	                    	}else {
 	                    		ChatMessage error =  new ChatMessage(this.username, ChatMessage.MessageType.MESSAGE, "En tu lista de usuarios baneados no se ha encontrado "+msn.getMessage().split(" ")[1]);
-	                    		sendMessage(error);
+	                    		sendMessage(error,this);
 	                    		//System.out.println("\nPor lo tanto no se ha podido llevar a cabo la opercion de desbaneo\n");
 	                    	}
 	                    	
@@ -197,10 +197,15 @@ public class ChatServerImpl implements ChatServer {
 
 	    }
 
-	    public void sendMessage(ChatMessage msg) {
+	    public void sendMessage(ChatMessage msg,ServerThreadForClient cliente) {
 	        try {
-	            oos.writeObject(msg);
-	            oos.flush();
+	        		if(banlist.contains(cliente.username)) {
+	        			
+	        		}else {
+	        			oos.writeObject(msg);
+			            oos.flush();  
+	        		}
+	        		 
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
