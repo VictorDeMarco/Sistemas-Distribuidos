@@ -10,22 +10,51 @@ import java.net.Socket;
 import es.ubu.lsi.common.ChatMessage;
 import es.ubu.lsi.server.ChatServerImpl;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ChatClientImpl.
+ */
 public class ChatClientImpl implements ChatClient, Serializable {
 
+    /** The Constant serialVersionUID. */
     private static final long serialVersionUID = 1L;
+    
+    /** The server. */
     private String server;
+    
+    /** The username. */
     private String username;
+    
+    /** The port. */
     private int port;
+    
+    /** The carry on. */
     private boolean carryOn = true;
+    
+    /** The socket. */
     private Socket socket;
+    
+    /** The oos. */
     private ObjectOutputStream oos; // SOLO para enviar mensajes
 
+    /**
+     * Instantiates a new chat client impl.
+     *
+     * @param server the server
+     * @param port the port
+     * @param username the username
+     */
     public ChatClientImpl(String server, int port, String username) {
         this.server = server;
         this.port = port;
         this.username = username;
     }
 
+    /**
+     * Start.
+     *
+     * @return true, if successful
+     */
     @Override
     public boolean start() {
         try {
@@ -45,6 +74,12 @@ public class ChatClientImpl implements ChatClient, Serializable {
         }
     }
 
+    /**
+     * Send message.
+     *
+     * @param msg the msg
+     * @return true, if successful
+     */
     @Override
     public boolean sendMessage(ChatMessage msg) {
         BufferedReader inUsuario = new BufferedReader(new InputStreamReader(System.in));
@@ -68,6 +103,9 @@ public class ChatClientImpl implements ChatClient, Serializable {
         return true;
     }
 
+    /**
+     * Disconnect.
+     */
     @Override
     public void disconnect() {
         try {
@@ -83,6 +121,11 @@ public class ChatClientImpl implements ChatClient, Serializable {
         System.exit(0);
     }
 
+    /**
+     * The main method.
+     *
+     * @param args the arguments
+     */
     public static void main(String[] args) {
         try {
             BufferedReader entrada = new BufferedReader(new InputStreamReader(System.in));
@@ -103,11 +146,31 @@ public class ChatClientImpl implements ChatClient, Serializable {
         }
     }
 
+    /**
+     * The listener interface for receiving chatClient events.
+     * The class that is interested in processing a chatClient
+     * event implements this interface, and the object created
+     * with that class is registered with a component using the
+     * component's <code>addChatClientListener</code> method. When
+     * the chatClient event occurs, that object's appropriate
+     * method is invoked.
+     *
+     * @see ChatClientListener
+     */
     // 🔹 ChatClientListener ahora gestiona su propio ObjectInputStream
     public class ChatClientListener extends Thread {
+        
+        /** The ois. */
         private ObjectInputStream ois;
+        
+        /** The socket. */
         private Socket socket;
 
+        /**
+         * Instantiates a new chat client listener.
+         *
+         * @param socket the socket
+         */
         public ChatClientListener(Socket socket) {
             this.socket = socket;
             try {
@@ -117,6 +180,9 @@ public class ChatClientImpl implements ChatClient, Serializable {
             }
         }
 
+        /**
+         * Run.
+         */
         public synchronized void run() {
             while (carryOn) {
                 try {
@@ -131,6 +197,7 @@ public class ChatClientImpl implements ChatClient, Serializable {
                     }
                 } catch (IOException e) {
                     System.err.println("Se perdió la conexión con el servidor.");
+                    System.exit(0);
                     break;
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();

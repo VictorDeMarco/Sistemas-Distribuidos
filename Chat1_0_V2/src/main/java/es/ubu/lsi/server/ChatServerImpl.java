@@ -16,24 +16,47 @@ import java.util.List;
 import es.ubu.lsi.common.ChatMessage;
 import es.ubu.lsi.common.ChatMessage.MessageType;
 
+// TODO: Auto-generated Javadoc
 /**
- * @author Víctor De Marco Velasco
+ * The Class ChatServerImpl.
  *
+ * @author Víctor De Marco Velasco
  */
 public class ChatServerImpl implements ChatServer {
+	
+	/** The Constant DEFAULT_PORT. */
 	public static final int DEFAULT_PORT = 1500;
+	
+	/** The clientid. */
 	public static int clientid;
+	
+	/** The sdf. */
 	public static SimpleDateFormat sdf;
+	
+	/** The port. */
 	public int port;
+	
+	/** The alive. */
 	public boolean alive = true;
 	
+	/** The socket. */
 	public Socket socket;
+	
+	/** The clients. */
 	private List<ServerThreadForClient> clients = new ArrayList<>();
 	
+	/**
+	 * Instantiates a new chat server impl.
+	 *
+	 * @param port the port
+	 */
 	public ChatServerImpl(int port) {
 		this.port = port;
 	}
 
+	/**
+	 * Startup.
+	 */
 	@Override
 	public void startup() {
 		// TODO Auto-generated method stub
@@ -59,6 +82,9 @@ public class ChatServerImpl implements ChatServer {
 		}
 	}
 
+	/**
+	 * Shutdown.
+	 */
 	@Override
 	public void shutdown() {
 		 alive = false;
@@ -72,6 +98,12 @@ public class ChatServerImpl implements ChatServer {
 	        }
 	}
 
+	/**
+	 * Broadcast.
+	 *
+	 * @param message the message
+	 * @param cliente the cliente
+	 */
 	@Override
 	public synchronized void broadcast(ChatMessage message,ServerThreadForClient cliente) {
 		for (ServerThreadForClient client : clients) {
@@ -81,13 +113,18 @@ public class ChatServerImpl implements ChatServer {
           }
 		}
 		
+	/**
+	 * Removes the.
+	 *
+	 * @param id the id
+	 */
 	@Override
 	public synchronized void remove(int id) {
 		boolean loc = true;
 		for (ServerThreadForClient client : clients) {
             if (client.id == id) { 
             	 client.disconnect();
-				 clients.remove(client);
+            	 clients.remove(client);
 				 loc =false;
 				 break;
             }
@@ -98,13 +135,33 @@ public class ChatServerImpl implements ChatServer {
        
     }
 
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 */
 	public static void main(String[] args) {
 		ChatServerImpl server = new ChatServerImpl(DEFAULT_PORT);
 		server.startup();
 
 	}
 	
+	/**
+	 * The listener interface for receiving serverConsole events.
+	 * The class that is interested in processing a serverConsole
+	 * event implements this interface, and the object created
+	 * with that class is registered with a component using the
+	 * component's <code>addServerConsoleListener</code> method. When
+	 * the serverConsole event occurs, that object's appropriate
+	 * method is invoked.
+	 *
+	 * @see ServerConsoleEvent
+	 */
 	private class ServerConsoleListener extends Thread {
+        
+        /**
+         * Run.
+         */
         @Override
         public void run() {
             try (BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in))) {
@@ -133,15 +190,36 @@ public class ChatServerImpl implements ChatServer {
 	
 	
 
+	/**
+	 * The Class ServerThreadForClient.
+	 */
 	public class ServerThreadForClient extends Thread {
-	    public int id;
-	    public String username;
-	    private Socket socket;
-	    private ObjectInputStream ois;
-	    private ObjectOutputStream oos;
-	    public List<String> banlist = new ArrayList<>();
+	    
+    	/** The id. */
+    	public int id;
+	    
+    	/** The username. */
+    	public String username;
+	    
+    	/** The socket. */
+    	private Socket socket;
+	    
+    	/** The ois. */
+    	private ObjectInputStream ois;
+	    
+    	/** The oos. */
+    	private ObjectOutputStream oos;
+	    
+    	/** The banlist. */
+    	public List<String> banlist = new ArrayList<>();
 
-	    public ServerThreadForClient(Socket socket, int id) {
+	    /**
+    	 * Instantiates a new server thread for client.
+    	 *
+    	 * @param socket the socket
+    	 * @param id the id
+    	 */
+    	public ServerThreadForClient(Socket socket, int id) {
 	        super();
 	        this.socket = socket;
 	        this.id = id;
@@ -156,6 +234,9 @@ public class ChatServerImpl implements ChatServer {
 	    }
 
 
+		/**
+		 * Run.
+		 */
 		public synchronized void run() {
 	        while (true) {
 	            try {
@@ -197,25 +278,32 @@ public class ChatServerImpl implements ChatServer {
 
 	    }
 
-	    public void sendMessage(ChatMessage msg,ServerThreadForClient cliente) {
+	    /**
+    	 * Send message.
+    	 *
+    	 * @param msg the msg
+    	 * @param cliente the cliente
+    	 */
+    	public void sendMessage(ChatMessage msg,ServerThreadForClient cliente) {
 	        try {
-	        		if(banlist.contains(cliente.username)) {
-	        			
-	        		}else {
+	        		if(!banlist.contains(cliente.username)) {
 	        			oos.writeObject(msg);
-			            oos.flush();  
+			            oos.flush(); 
 	        		}
 	        		 
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
 	    }
-	    public void disconnect() {
+	    
+    	/**
+    	 * Disconnect.
+    	 */
+    	public void disconnect() {
             try {
                 if (ois != null) ois.close();
                 if (oos != null) oos.close();
                 if (socket != null) socket.close();
-                clients.remove(this);
                 System.out.println("\nCliente con ID " + id + " desconectado y eliminado. \n");
             } catch (IOException e) {
                 e.printStackTrace();

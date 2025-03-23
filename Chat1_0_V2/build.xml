@@ -1,0 +1,7 @@
+<project name="Chat1_0_V2" default="javadoc" basedir=".">
+    <target name="javadoc">
+        <javadoc destdir="doc" sourcepath="src/main/java" classpath="target/classes">
+            <packageset dir="src/main/java" />
+        </javadoc>
+    </target>
+</project>

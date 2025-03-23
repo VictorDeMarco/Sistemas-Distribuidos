@@ -3,9 +3,12 @@
  */
 package es.ubu.lsi.common;
 import java.io.*;
+// TODO: Auto-generated Javadoc
+
 /**
- * @author Usuario
+ * The Class ChatMessage.
  *
+ * @author Usuario
  */
 
 /**
@@ -46,8 +49,8 @@ public class ChatMessage implements Serializable {
 	
 	/**
 	 * Constructor.
-	 * 
-	 * @param id client id
+	 *
+	 * @param username the username
 	 * @param type type
 	 * @param message message
 	 */
@@ -69,8 +72,8 @@ public class ChatMessage implements Serializable {
 	
 	/**
 	 * Sets type.
-	 * 
-	 * @param type
+	 *
+	 * @param type the new type
 	 * @see #getType()
 	 */
 	private void setType(MessageType type) {
@@ -98,6 +101,8 @@ public class ChatMessage implements Serializable {
 	}
 
 	/**
+	 * Gets the username.
+	 *
 	 * @return the username
 	 */
 	public String getUsername() {
@@ -105,6 +110,8 @@ public class ChatMessage implements Serializable {
 	}
 
 	/**
+	 * Sets the username.
+	 *
 	 * @param username the username to set
 	 */
 	public void setUsername(String username) {
