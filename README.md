@@ -10,7 +10,9 @@
  En si tampoco es muy relevante el cambio ya que funcionalmente el codigo funcionaria igual pasando el ID en cada mensaje simplemente que habria que gastar un primer mensaje en pasar el username al server 
  y me parecio mas comodo hacerlo de esta forma.
 
- 3 
+ 3 En caso de que te extrañe ver que en este repositorio se han realizado commits de aperentemente dos usuarios, tengo que decir que ambos soy yo Victor De Marco.
+ Simplemente uno de ellos es el usuario que tengo configurado en el portatil y el otro es el usuario que tengo en el ordenador de sobremesa que utilizo mayoritariamente.
+ Dicho usuario tiene el nombre de motachin.
  
 
  
